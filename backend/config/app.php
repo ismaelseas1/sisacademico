@@ -43,6 +43,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Documentacion publica
+    |--------------------------------------------------------------------------
+    |
+    | Scramble bloquea /docs/api fuera del entorno local. Con esta bandera se
+    | habilita el acceso publico a la documentacion en el entorno desplegado,
+    | necesario para la demostracion del proyecto. Se puede desactivar sin
+    | tocar codigo.
+    |
+    */
+
+    'docs_public' => (bool) env('DOCS_PUBLIC', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |

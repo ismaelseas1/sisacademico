@@ -32,3 +32,6 @@ DOCUMENTO PROYECTO CREDIFAST*.docx
 
 # Scratch
 .remember/
+
+# Documento OpenAPI exportado (se regenera con: php artisan scramble:export)
+/backend/api.json
