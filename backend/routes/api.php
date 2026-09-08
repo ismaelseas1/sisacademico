@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\EstudianteController;
+use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 | El prefijo /api/v1 se define en bootstrap/app.php.
 | La autenticacion se resuelve con tokens Bearer emitidos por Sanctum.
 |
+| Criterio de permisos:
+|   - Consultar (index/show) lo puede hacer cualquier usuario autenticado.
+|   - Crear, editar y eliminar queda reservado al rol admin.
+|
 */
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -21,8 +27,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
 
-    // La administracion de cuentas queda reservada al rol admin.
+    /*
+    |----------------------------------------------------------------------
+    | Consulta abierta a cualquier usuario autenticado
+    |----------------------------------------------------------------------
+    */
+    Route::apiResource('estudiantes', EstudianteController::class)->only(['index', 'show']);
+    Route::apiResource('materias', MateriaController::class)->only(['index', 'show']);
+
+    /*
+    |----------------------------------------------------------------------
+    | Escritura y administracion de cuentas: solo el rol admin
+    |----------------------------------------------------------------------
+    */
     Route::middleware('rol:admin')->group(function () {
         Route::apiResource('usuarios', UsuarioController::class);
+        Route::apiResource('estudiantes', EstudianteController::class)->except(['index', 'show']);
+        Route::apiResource('materias', MateriaController::class)->except(['index', 'show']);
     });
 });
