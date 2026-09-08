@@ -1,0 +1,81 @@
+<div class="usuarios-container">
+
+  <div class="header">
+
+    <h1>
+      Gestión de Usuarios
+    </h1>
+
+    <button class="btn-nuevo">
+      + Nuevo usuario
+    </button>
+
+  </div>
+
+
+  <table>
+
+    <thead>
+
+      <tr>
+        <th>ID</th>
+        <th>Usuario</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+
+    </thead>
+
+
+    <tbody>
+
+      <tr *ngFor="let usuario of usuarios">
+
+        <td>
+          {{usuario.id}}
+        </td>
+
+        <td>
+          {{usuario.usuario}}
+        </td>
+
+        <td>
+          {{usuario.email}}
+        </td>
+
+        <td>
+          {{usuario.rol}}
+        </td>
+
+        <td>
+
+          <span class="activo">
+            Activo
+          </span>
+
+        </td>
+
+        <td>
+
+          <button class="editar">
+            Editar
+          </button>
+
+          <button class="eliminar">
+            Eliminar
+          </button>
+
+        </td>
+
+      </tr>
+
+
+    </tbody>
+
+
+  </table>
+
+
+</div>

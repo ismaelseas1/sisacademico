@@ -1,0 +1,31 @@
+.login-container {
+  width: 350px;
+  margin: 80px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #ccc;
+}
+
+h1 {
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+}

@@ -1,0 +1,60 @@
+<div class="layout">
+
+  <header class="navbar">
+
+    <h2>
+      Sistema Académico
+    </h2>
+
+    <div>
+      <span>Administrador</span>
+
+      <button (click)="cerrarSesion()">
+        Salir
+      </button>
+    </div>
+
+  </header>
+
+
+  <aside class="sidebar">
+
+    <ul>
+
+      <li routerLink="/dashboard">
+        Panel
+      </li>
+
+      <li routerLink="/usuarios">
+        Usuarios
+      </li>
+
+      <li routerLink="/docentes">
+        Docentes
+      </li>
+
+      <li routerLink="/estudiantes">
+        Estudiantes
+      </li>
+
+      <li routerLink="/materias">
+        Materias
+      </li>
+
+      <li routerLink="/informes">
+        Informes
+      </li>
+
+    </ul>
+
+  </aside>
+
+
+  <main class="content">
+
+    <router-outlet></router-outlet>
+
+  </main>
+
+
+</div>
