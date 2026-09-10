@@ -1,48 +1,140 @@
-<div class="layout">
+<div
+  class="layout"
+  [class.menu-cerrado]="!menuAbierto"
+  [class.dark]="modoOscuro">
+
+  <!-- =========================
+          NAVBAR
+  ========================== -->
 
   <header class="navbar">
 
-    <h2>
-      Sistema Académico
-    </h2>
+    <div class="navbar-left">
 
-    <div>
-      <span>Administrador</span>
-
-      <button (click)="cerrarSesion()">
-        Salir
+      <button
+        class="menu-btn"
+        (click)="cambiarMenu()">
+        ☰
       </button>
+
+      <div class="brand">
+
+        <span class="logo">
+          🎓
+        </span>
+
+        <h2>
+          Sistema Académico
+        </h2>
+
+      </div>
+
+    </div>
+
+
+    <div class="user-area">
+
+      <div class="user">
+
+        <span class="user-icon">
+          👤
+        </span>
+
+        <span>
+          Administrador
+        </span>
+
+      </div>
+
+      <button
+        class="theme-btn"
+        (click)="cambiarTema()">
+
+        {{ modoOscuro ? '☀️' : '🌙' }}
+
+      </button>
+
+      <button
+        class="logout"
+        (click)="cerrarSesion()">
+
+        Salir
+
+      </button>
+
     </div>
 
   </header>
 
 
-  <aside class="sidebar">
+  <!-- =========================
+          SIDEBAR
+  ========================== -->
+
+  <aside
+    class="sidebar"
+    [class.oculto]="!menuAbierto">
 
     <ul>
 
       <li routerLink="/dashboard">
-        Panel
+
+        <span>📊</span>
+
+        <span class="texto">
+          Dashboard
+        </span>
+
       </li>
 
       <li routerLink="/usuarios">
-        Usuarios
+
+        <span>👥</span>
+
+        <span class="texto">
+          Usuarios
+        </span>
+
       </li>
 
       <li routerLink="/docentes">
-        Docentes
+
+        <span>👨‍🏫</span>
+
+        <span class="texto">
+          Docentes
+        </span>
+
       </li>
 
       <li routerLink="/estudiantes">
-        Estudiantes
+
+        <span>🎓</span>
+
+        <span class="texto">
+          Estudiantes
+        </span>
+
       </li>
 
       <li routerLink="/materias">
-        Materias
+
+        <span>📚</span>
+
+        <span class="texto">
+          Materias
+        </span>
+
       </li>
 
       <li routerLink="/informes">
-        Informes
+
+        <span>📄</span>
+
+        <span class="texto">
+          Informes
+        </span>
+
       </li>
 
     </ul>
@@ -50,11 +142,14 @@
   </aside>
 
 
+  <!-- =========================
+          CONTENIDO
+  ========================== -->
+
   <main class="content">
 
     <router-outlet></router-outlet>
 
   </main>
-
 
 </div>

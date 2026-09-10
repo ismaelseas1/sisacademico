@@ -14,18 +14,26 @@ import { Auth } from '../../core/services/auth';
 })
 export class MainLayout {
 
+  menuAbierto = true;
+
+  modoOscuro = false;
+
   constructor(
     private auth: Auth,
     private router: Router
   ) {}
 
+  cambiarMenu() {
+    this.menuAbierto = !this.menuAbierto;
+  }
 
-  cerrarSesion(){
+  cambiarTema() {
+    this.modoOscuro = !this.modoOscuro;
+  }
 
+  cerrarSesion() {
     this.auth.logout();
-
     this.router.navigate(['/']);
-
   }
 
 }

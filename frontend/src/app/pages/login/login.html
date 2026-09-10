@@ -1,29 +1,60 @@
 <div class="login-container">
 
-  <h1>Sistema Académico</h1>
 
-  <div class="form-group">
-    <label>Usuario</label>
-    <input 
+  <div class="login-form">
+
+
+    <div class="logo">
+      🎓
+    </div>
+
+
+    <h2>
+      Sistema Académico
+    </h2>
+
+
+    <p class="subtitle">
+      Ingrese sus credenciales para acceder
+    </p>
+
+
+
+    <label>
+      Usuario
+    </label>
+
+    <input
       type="text"
-      name="identificador"
       [(ngModel)]="identificador"
-      placeholder="Ingrese usuario">
-  </div>
+      placeholder="Ingrese usuario"
+    >
 
 
-  <div class="form-group">
-    <label>Contraseña</label>
-    <input 
+
+    <label>
+      Contraseña
+    </label>
+
+    <input
       type="password"
-      name="password"
       [(ngModel)]="password"
-      placeholder="Ingrese contraseña">
+      placeholder="Ingrese contraseña"
+    >
+
+
+
+    <button
+      class="btn-login"
+      (click)="ingresar()">
+
+      Ingresar
+
+    </button>
+
+
+
   </div>
 
-
-  <button type="button" (click)="ingresar()">
-    Ingresar
-  </button>
 
 </div>
