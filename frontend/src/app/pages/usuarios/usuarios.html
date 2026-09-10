@@ -2,80 +2,308 @@
 
   <div class="header">
 
-    <h1>
-      Gestión de Usuarios
-    </h1>
+    <div>
 
-    <button class="btn-nuevo">
-      + Nuevo usuario
+      <h1>Gestión de Usuarios</h1>
+
+      <p>Administración de usuarios registrados en el sistema.</p>
+
+    </div>
+
+    <button
+      class="btn-nuevo"
+      (click)="nuevoUsuario()">
+
+      ➕ Nuevo Usuario
+
     </button>
 
   </div>
 
+  <div class="barra-superior">
 
-  <table>
+    <input
+      type="text"
+      placeholder="🔍 Buscar usuario..."
+      (input)="buscarUsuario($event)">
 
-    <thead>
+  </div>
 
-      <tr>
-        <th>ID</th>
-        <th>Usuario</th>
-        <th>Email</th>
-        <th>Rol</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
+  <div class="tabla-container">
 
-    </thead>
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Último acceso</th>
+          <th>Acciones</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr *ngIf="cargando">
+
+          <td colspan="7" class="mensaje">
+
+            Cargando usuarios...
+
+          </td>
+
+        </tr>
+
+        <tr *ngFor="let usuario of usuariosFiltrados">
+
+          <td>{{usuario.id}}</td>
+
+          <td>
+
+            <strong>{{usuario.username}}</strong>
+
+          </td>
+
+          <td>
+
+            {{usuario.email}}
+
+          </td>
+
+          <td>
+
+            {{usuario.rol.nombre}}
+
+          </td>
+
+          <td>
+
+            <span
+
+              class="estado"
+
+              [class.activo]="usuario.activo"
+
+              [class.inactivo]="!usuario.activo">
+
+              {{usuario.activo ? 'Activo':'Inactivo'}}
+
+            </span>
+
+          </td>
+
+          <td>
+
+            {{usuario.ultimo_login | date:'dd/MM/yyyy HH:mm'}}
+
+          </td>
+
+          <td>
+
+            <button
+
+              class="editar"
+
+              (click)="editar(usuario)">
+
+              ✏ Editar
+
+            </button>
+
+            <button
+
+              class="eliminar"
+
+              (click)="eliminarUsuario(usuario.id)">
+
+              🗑 Eliminar
+
+            </button>
+
+          </td>
+
+        </tr>
+
+        <tr *ngIf="!cargando && usuariosFiltrados.length==0">
+
+          <td colspan="7">
+
+            No existen usuarios.
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+<!-- ===========================
+        MODAL USUARIO
+=========================== -->
+
+<div class="modal" *ngIf="mostrarModal">
+
+  <div class="modal-contenido">
+
+    <div class="modal-header">
+
+      <h2>
+        {{ editando ? 'Editar Usuario' : 'Nuevo Usuario' }}
+      </h2>
+
+      <button
+        class="cerrar"
+        (click)="cerrarModal()">
+
+        ✖
+
+      </button>
+
+    </div>
 
 
-    <tbody>
-
-      <tr *ngFor="let usuario of usuarios">
-
-        <td>
-          {{usuario.id}}
-        </td>
-
-        <td>
-          {{usuario.usuario}}
-        </td>
-
-        <td>
-          {{usuario.email}}
-        </td>
-
-        <td>
-          {{usuario.rol}}
-        </td>
-
-        <td>
-
-          <span class="activo">
-            Activo
-          </span>
-
-        </td>
-
-        <td>
-
-          <button class="editar">
-            Editar
-          </button>
-
-          <button class="eliminar">
-            Eliminar
-          </button>
-
-        </td>
-
-      </tr>
+    <div class="modal-body">
 
 
-    </tbody>
+      <div class="grupo">
+
+        <label>
+          Usuario
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formulario.username"
+          placeholder="Ingrese el usuario">
+
+      </div>
 
 
-  </table>
+      <div class="grupo">
 
+        <label>
+          Correo electrónico
+        </label>
+
+        <input
+          type="email"
+          [(ngModel)]="formulario.email"
+          placeholder="Ingrese el correo">
+
+      </div>
+
+
+      <div class="grupo">
+
+        <label>
+          Contraseña
+        </label>
+
+        <input
+          type="password"
+          [(ngModel)]="formulario.password"
+          placeholder="Ingrese la contraseña">
+
+      </div>
+
+
+      <div class="grupo">
+
+        <label>
+          Rol
+        </label>
+
+        <select
+          [(ngModel)]="formulario.rol_id">
+
+
+          <option
+            *ngFor="let rol of roles"
+            [value]="rol.id">
+
+            {{ rol.nombre }}
+
+          </option>
+
+
+        </select>
+
+      </div>
+
+
+
+      <div class="grupo-check">
+
+
+        <label class="switch">
+
+
+          <input
+            type="checkbox"
+            [(ngModel)]="formulario.activo">
+
+
+          <span class="slider round"></span>
+
+
+        </label>
+
+
+        <span class="estado-texto">
+
+          {{ formulario.activo ? 'Activo' : 'Inactivo' }}
+
+        </span>
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+    <div class="modal-footer">
+
+
+      <button
+        class="cancelar"
+        (click)="cerrarModal()">
+
+        Cancelar
+
+      </button>
+
+
+
+      <button
+        class="guardar"
+        (click)="guardarUsuario()">
+
+
+        {{ editando ? 'Actualizar' : 'Guardar' }}
+
+
+      </button>
+
+
+
+    </div>
+
+
+  </div>
 
 </div>
