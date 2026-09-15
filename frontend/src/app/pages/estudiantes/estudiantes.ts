@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  imports: [],
   selector: 'app-estudiantes',
-  styleUrl: './estudiantes.scss',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './estudiantes.html',
+  styleUrl: './estudiantes.scss'
 })
-export class Estudiantes {}
+export class Estudiantes {
+
+}
