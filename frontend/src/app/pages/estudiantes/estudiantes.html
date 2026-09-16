@@ -1,1 +1,63 @@
-<p>estudiantes works!</p>
+<div class="usuarios-container">
+
+  <div class="header">
+
+    <h1>Gestión de Estudiantes</h1>
+
+    <p>Administración de estudiantes registrados en el sistema.</p>
+
+  </div>
+
+  <div class="barra-superior">
+
+    <input
+      type="text"
+      [(ngModel)]="busqueda"
+      (keyup)="buscar()"
+      placeholder="Buscar estudiante">
+
+  </div>
+
+  <table>
+
+    <thead>
+
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Registro</th>
+        <th>Semestre</th>
+        <th>PPA</th>
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr *ngIf="cargando">
+        <td colspan="5">
+          Cargando...
+        </td>
+      </tr>
+
+      <tr *ngFor="let estudiante of estudiantes">
+
+        <td>{{ estudiante.id }}</td>
+        <td>{{ estudiante.nombre }}</td>
+        <td>{{ estudiante.registro }}</td>
+        <td>{{ estudiante.semestre }}</td>
+        <td>{{ estudiante.ppa }}</td>
+
+      </tr>
+
+      <tr *ngIf="!cargando && estudiantes.length === 0">
+        <td colspan="5">
+          No existen estudiantes
+        </td>
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>

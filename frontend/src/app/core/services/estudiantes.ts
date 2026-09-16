@@ -18,7 +18,7 @@ export class EstudiantesService {
     pagina: number = 1
   ) {
 
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('buscar', buscar)
       .set('page', pagina);
 
