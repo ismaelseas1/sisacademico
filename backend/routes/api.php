@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CarreraController;
 use App\Http\Controllers\Api\V1\EstudianteController;
+use App\Http\Controllers\Api\V1\FacultadController;
 use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\UsuarioController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     | Consulta abierta a cualquier usuario autenticado
     |----------------------------------------------------------------------
     */
+    Route::apiResource('facultades', FacultadController::class)
+        ->parameters(['facultades' => 'facultad'])
+        ->only(['index', 'show']);
+    Route::apiResource('carreras', CarreraController::class)->only(['index', 'show']);
     Route::apiResource('estudiantes', EstudianteController::class)->only(['index', 'show']);
     Route::apiResource('materias', MateriaController::class)->only(['index', 'show']);
 
@@ -42,6 +48,10 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::middleware('rol:admin')->group(function () {
         Route::apiResource('usuarios', UsuarioController::class);
+        Route::apiResource('facultades', FacultadController::class)
+            ->parameters(['facultades' => 'facultad'])
+            ->except(['index', 'show']);
+        Route::apiResource('carreras', CarreraController::class)->except(['index', 'show']);
         Route::apiResource('estudiantes', EstudianteController::class)->except(['index', 'show']);
         Route::apiResource('materias', MateriaController::class)->except(['index', 'show']);
     });
