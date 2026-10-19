@@ -1,0 +1,85 @@
+# Blueprint de despliegue para Render (https://render.com)
+#
+# Render lee este archivo y crea el servicio automaticamente.
+# Las variables con `sync: false` NO se toman de aqui: Render las pide
+# al desplegar, para no dejar secretos escritos en el repositorio.
+
+services:
+  - type: web
+    name: sisacademico-api
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: back-end-seas
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /up
+
+    envVars:
+      - key: APP_NAME
+        value: Sistema Academico API
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+
+      # Generar en local con: php artisan key:generate --show
+      # y pegar el valor completo, incluido el prefijo "base64:".
+      - key: APP_KEY
+        sync: false
+
+      # URL publica que asigna Render, por ejemplo:
+      # https://sisacademico-api.onrender.com
+      - key: APP_URL
+        sync: false
+
+      # En contenedores los logs van a la salida estandar.
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+      # Cadena de conexion del proveedor de base de datos.
+      # Postgres: postgres://usuario:clave@host:5432/basededatos?sslmode=require
+      # MySQL:    mysql://usuario:clave@host:3306/basededatos
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        sync: false
+
+      # La API es stateless: no necesita tablas de sesion, cache ni colas.
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+
+      # Origenes permitidos para el frontend Angular, separados por comas.
+      - key: FRONTEND_URL
+        sync: false
+
+      # Notificaciones push de la app movil (Firebase Cloud Messaging).
+      # FIREBASE_CREDENTIALS_BASE64 = JSON de la cuenta de servicio en base64
+      # (ver docs/04-notificaciones-firebase.md). Sin el, la API funciona
+      # igual pero no envia notificaciones.
+      - key: FIREBASE_PROJECT_ID
+        value: academico-d2ff6
+      - key: FIREBASE_CREDENTIALS_BASE64
+        sync: false
+
+      # Expone /docs/api y /docs/swagger fuera del entorno local.
+      - key: DOCS_PUBLIC
+        value: "true"
+      - key: API_VERSION
+        value: 1.0.0
+
+      # Tareas que ejecuta el contenedor al arrancar.
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: RUN_SEED
+        value: "true"
+      # Datos de demostracion: conviene dejarlo en true para la defensa
+      # y pasarlo a false cuando haya informacion real.
+      - key: RUN_DEMO_SEED
+        value: "true"
