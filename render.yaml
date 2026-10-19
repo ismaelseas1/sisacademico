@@ -1,0 +1,30 @@
+# Blueprint de Render para el frontend Angular (sitio estatico).
+#
+# Render -> New -> Blueprint -> repositorio sisacademico, rama front-end-seas.
+# El nombre "sisacademico-web" importa: la API acepta CORS de
+# https://sisacademico-web(-sufijo).onrender.com (backend/config/cors.php).
+
+services:
+  - type: web
+    name: sisacademico-web
+    runtime: static
+    branch: front-end-seas
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist/frontend/browser
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+
+    # Angular resuelve las rutas en el navegador: cualquier URL sirve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
