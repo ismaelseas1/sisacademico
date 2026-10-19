@@ -27,7 +27,12 @@ return [
 
     'allowed_origins' => $origenes,
 
-    'allowed_origins_patterns' => [],
+    // Frontend Angular publicado en Render (sitio estatico "sisacademico-web",
+    // con o sin el sufijo que Render agrega si el nombre ya esta tomado).
+    // Se puede reemplazar con FRONTEND_URL_PATTERN sin tocar el codigo.
+    'allowed_origins_patterns' => [
+        env('FRONTEND_URL_PATTERN', '#^https://sisacademico-web(-[a-z0-9]+)?\.onrender\.com$#'),
+    ],
 
     'allowed_headers' => ['*'],
 
