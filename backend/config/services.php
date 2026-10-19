@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Notificaciones push de la app movil (ver app/Services/FirebaseMessaging.php).
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'credentials_base64' => env('FIREBASE_CREDENTIALS_BASE64'),
+    ],
+
 ];

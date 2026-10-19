@@ -45,7 +45,7 @@ class AuthController extends Controller
     public function me(Request $request): UsuarioResource
     {
         return new UsuarioResource(
-            $request->user()->load('rol')
+            $request->user()->load(['rol', 'estudiante', 'docente'])
         );
     }
 

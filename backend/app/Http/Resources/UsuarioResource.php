@@ -20,6 +20,8 @@ class UsuarioResource extends JsonResource
             'ultimo_login' => $this->ultimo_login?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'rol' => new RolResource($this->whenLoaded('rol')),
+            'estudiante' => new EstudianteResource($this->whenLoaded('estudiante')),
+            'docente' => new DocenteResource($this->whenLoaded('docente')),
         ];
     }
 }

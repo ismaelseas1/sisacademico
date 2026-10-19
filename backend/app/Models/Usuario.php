@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
@@ -16,9 +17,8 @@ class Usuario extends Authenticatable
     protected $table = 'usuarios';
 
     /**
-     * El modelo de datos define created_at y deleted_at, pero no
-     * updated_at. Se anula UPDATED_AT para que Eloquent no intente
-     * escribir una columna que no existe.
+     * El diagrama define created_at y deleted_at, pero no updated_at.
+     * Se anula UPDATED_AT para que Eloquent no intente escribir esa columna.
      */
     const UPDATED_AT = null;
 
@@ -31,15 +31,11 @@ class Usuario extends Authenticatable
         'ultimo_login',
     ];
 
-    /**
-     * La contrasena nunca debe viajar en una respuesta de la API.
-     */
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
         return [
-            // Hashea la contrasena automaticamente al asignarla.
             'password' => 'hashed',
             'activo' => 'boolean',
             'ultimo_login' => 'datetime',
@@ -51,14 +47,28 @@ class Usuario extends Authenticatable
         return $this->belongsTo(Rol::class, 'rol_id');
     }
 
+    public function estudiante(): HasOne
+    {
+        return $this->hasOne(Estudiante::class, 'usuario_id');
+    }
+
+    public function docente(): HasOne
+    {
+        return $this->hasOne(Docente::class, 'usuario_id');
+    }
+
     public function auditorias(): HasMany
     {
         return $this->hasMany(Auditoria::class, 'usuario_id');
     }
 
-    /**
-     * Indica si el usuario tiene alguno de los roles indicados.
-     */
+    /** Celulares donde la app movil recibe notificaciones push. */
+    public function dispositivos(): HasMany
+    {
+        return $this->hasMany(Dispositivo::class, 'usuario_id');
+    }
+
+    /** Atajo para autorizacion por rol en policies y middleware. */
     public function tieneRol(string ...$nombres): bool
     {
         return in_array($this->rol?->nombre, $nombres, true);

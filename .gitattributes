@@ -1,0 +1,16 @@
+# Normaliza los finales de linea al guardar en el repositorio.
+* text=auto
+
+# Estos archivos los ejecuta Linux dentro del contenedor: con CRLF
+# fallarian con "exec format error" o "not found".
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+docker/*        text eol=lf
+*.yaml          text eol=lf
+*.yml           text eol=lf
+
+# Binarios: git no debe tocarlos.
+*.pdf           binary
+*.png           binary
+*.jpg           binary
+*.docx          binary
