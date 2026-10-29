@@ -12,7 +12,6 @@ use App\Models\Materia;
 use App\Models\Proyecto;
 use App\Models\ProyectoMiembro;
 use App\Models\Rol;
-use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 
 /**
@@ -20,9 +19,14 @@ use Illuminate\Database\Seeder;
  *
  * Se ejecuta aparte de DatabaseSeeder:
  *   php artisan db:seed --class=DemoSeeder
+ *
+ * Las cuentas demo solo se crean si no existen (ver CuentaSemilla): no se
+ * restablecen contrasenas y las personas eliminadas desde el panel no vuelven.
  */
 class DemoSeeder extends Seeder
 {
+    use CuentaSemilla;
+
     public function run(): void
     {
         $rolDocente = Rol::where('nombre', 'docente')->firstOrFail();
@@ -51,12 +55,9 @@ class DemoSeeder extends Seeder
         ));
 
         // --- Docente tutor ---
-        $uDocente = Usuario::updateOrCreate(
-            ['username' => 'mlopez'],
-            ['email' => 'mlopez@uno.edu.bo', 'password' => 'docente123', 'rol_id' => $rolDocente->id, 'activo' => true]
-        );
+        $uDocente = $this->cuentaSemilla('mlopez', 'mlopez@uno.edu.bo', 'docente123', $rolDocente->id);
 
-        $docente = Docente::updateOrCreate(
+        $docente = $uDocente === null ? null : Docente::firstOrCreate(
             ['usuario_id' => $uDocente->id],
             [
                 'nombre' => 'Maria Lopez Vargas',
@@ -72,18 +73,14 @@ class DemoSeeder extends Seeder
             ['username' => 'rmamani', 'nombre' => 'Ricardo Mamani Choque', 'registro' => '2020-0312', 'semestre' => 7, 'ppa' => 6.95, 'nacimiento' => '2001-11-05'],
         ];
 
-        $estudiantes = collect($datosEstudiantes)->map(function ($d) use ($rolEstudiante, $carrera) {
-            $usuario = Usuario::updateOrCreate(
-                ['username' => $d['username']],
-                [
-                    'email' => $d['username'].'@uno.edu.bo',
-                    'password' => 'estudiante123',
-                    'rol_id' => $rolEstudiante->id,
-                    'activo' => true,
-                ]
-            );
+        $estudiantes = collect($datosEstudiantes)->mapWithKeys(function ($d) use ($rolEstudiante, $carrera) {
+            $usuario = $this->cuentaSemilla($d['username'], $d['username'].'@uno.edu.bo', 'estudiante123', $rolEstudiante->id);
 
-            return Estudiante::updateOrCreate(
+            if ($usuario === null || Estudiante::where('registro', $d['registro'])->where('usuario_id', '!=', $usuario->id)->exists()) {
+                return [];
+            }
+
+            return [$d['username'] => Estudiante::firstOrCreate(
                 ['usuario_id' => $usuario->id],
                 [
                     'nombre' => $d['nombre'],
@@ -93,26 +90,30 @@ class DemoSeeder extends Seeder
                     'fecha_nacimiento' => $d['nacimiento'],
                     'ppa' => $d['ppa'],
                 ]
-            );
+            )];
         });
 
         // --- Inscripciones ---
         foreach ($estudiantes as $estudiante) {
             foreach ($materias->take(2) as $materia) {
-                Inscripcion::updateOrCreate(
+                Inscripcion::firstOrCreate(
                     ['estudiante_id' => $estudiante->id, 'materia_id' => $materia->id],
                     ['fecha_inscripcion' => now()->subDays(random_int(5, 40))]
                 );
             }
         }
 
-        // --- Proyecto con equipo ---
+        // --- Proyecto con equipo (solo si siguen el autor, la companera y el tutor) ---
+        if (! isset($estudiantes['jperez'], $estudiantes['lgutierrez']) || $docente === null) {
+            return;
+        }
+
         $enProgreso = EstadoProyecto::where('nombre', 'en progreso')->firstOrFail();
 
-        $proyecto = Proyecto::updateOrCreate(
+        $proyecto = Proyecto::firstOrCreate(
             ['titulo' => 'Sistema academico integrador'],
             [
-                'estudiante_id' => $estudiantes[0]->id,
+                'estudiante_id' => $estudiantes['jperez']->id,
                 'tutor_id' => $docente->id,
                 'descripcion' => 'API REST en Laravel consumida por una SPA en Angular, sobre el modelo de datos compartido entre los grupos.',
                 'estado_id' => $enProgreso->id,
@@ -121,12 +122,12 @@ class DemoSeeder extends Seeder
         );
 
         $equipo = [
-            [$estudiantes[0], 'Backend', true],
-            [$estudiantes[1], 'Frontend', false],
+            [$estudiantes['jperez'], 'Backend', true],
+            [$estudiantes['lgutierrez'], 'Frontend', false],
         ];
 
         foreach ($equipo as [$estudiante, $rol, $lider]) {
-            ProyectoMiembro::updateOrCreate(
+            ProyectoMiembro::firstOrCreate(
                 ['proyecto_id' => $proyecto->id, 'estudiante_id' => $estudiante->id],
                 ['rol' => $rol, 'es_lider' => $lider]
             );
