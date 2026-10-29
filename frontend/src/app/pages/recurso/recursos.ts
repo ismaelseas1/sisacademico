@@ -76,12 +76,38 @@ const usuarios: OpcionesRemotas = {
 };
 const semestres = Array.from({ length: 10 }, (_, i) => ({ valor: i + 1, etiqueta: `${i + 1}.º semestre` }));
 
+/**
+ * Cuenta de acceso que se registra junto con la ficha del docente o del estudiante.
+ * El rol lo pone la API segun el modulo (docente o estudiante), no se elige aqui.
+ */
+const camposCuenta: Campo[] = [
+  {
+    nombre: 'username',
+    etiqueta: 'Usuario (para ingresar)',
+    tipo: 'texto',
+    requerido: true,
+    ayuda: 'Sin espacios. Ej. jperez',
+    desde: (f: { usuario?: Usuario | null }) => f.usuario?.username,
+  },
+  { nombre: 'email', etiqueta: 'Correo', tipo: 'email', requerido: true, desde: (f: { usuario?: Usuario | null }) => f.usuario?.email },
+  {
+    nombre: 'password',
+    etiqueta: 'Contraseña',
+    tipo: 'password',
+    requerido: true,
+    opcionalAlEditar: true,
+    ayuda: 'Mínimo 8 caracteres. Al editar, déjala vacía para no cambiarla.',
+  },
+  { nombre: 'activo', etiqueta: 'Cuenta activa', tipo: 'check', defecto: true, desde: (f: { usuario?: Usuario | null }) => f.usuario?.activo ?? true },
+];
+
 /** Modulos de administracion (solo admin, salvo "estudiantes-consulta" para el docente). */
 export const RECURSOS: Record<string, Recurso> = {
   usuarios: {
     titulo: 'Usuarios',
     singular: 'usuario',
-    descripcion: 'Cuentas de acceso y su rol. Después de crear un usuario estudiante o docente, regístrale su ficha.',
+    descripcion:
+      'Cuentas de acceso. Aquí se crean los administradores; las cuentas de docentes y estudiantes se crean solas al registrarlos en sus módulos.',
     ruta: 'usuarios',
     buscar: 'Buscar por usuario o correo',
     filtros: [
@@ -98,7 +124,15 @@ export const RECURSOS: Record<string, Recurso> = {
     campos: [
       { nombre: 'username', etiqueta: 'Nombre de usuario', tipo: 'texto', requerido: true },
       { nombre: 'email', etiqueta: 'Correo', tipo: 'email', requerido: true },
-      { nombre: 'rol_id', etiqueta: 'Rol', tipo: 'select', requerido: true, remoto: roles, desde: (u: Usuario) => u.rol?.id },
+      {
+        nombre: 'rol_id',
+        etiqueta: 'Rol',
+        tipo: 'select',
+        requerido: true,
+        remoto: roles,
+        desde: (u: Usuario) => u.rol?.id,
+        ayuda: 'Para docentes y estudiantes usa sus módulos: ahí se crea la cuenta con su ficha.',
+      },
       {
         nombre: 'password',
         etiqueta: 'Contraseña',
@@ -118,7 +152,7 @@ export const RECURSOS: Record<string, Recurso> = {
   estudiantes: {
     titulo: 'Estudiantes',
     singular: 'estudiante',
-    descripcion: 'Ficha académica de cada estudiante, vinculada a una cuenta de usuario con rol estudiante.',
+    descripcion: 'Ficha académica de cada estudiante. Al registrarlo se crea su cuenta con rol estudiante para la app y la web.',
     ruta: 'estudiantes',
     buscar: 'Buscar por nombre o registro',
     filtros: [
@@ -133,13 +167,13 @@ export const RECURSOS: Record<string, Recurso> = {
       { titulo: 'PPA', valor: (e: Estudiante) => ppa(e.ppa) },
     ],
     campos: [
-      { nombre: 'usuario_id', etiqueta: 'Cuenta de usuario', tipo: 'select', requerido: true, soloCrear: true, remoto: usuarios, ancho: true },
       { nombre: 'nombre', etiqueta: 'Nombre completo', tipo: 'texto', requerido: true },
       { nombre: 'registro', etiqueta: 'Número de registro', tipo: 'texto', requerido: true },
       { nombre: 'carrera_id', etiqueta: 'Carrera', tipo: 'select', requerido: true, remoto: carreras },
       { nombre: 'semestre', etiqueta: 'Semestre', tipo: 'numero', requerido: true, min: 1, max: 20 },
       { nombre: 'fecha_nacimiento', etiqueta: 'Fecha de nacimiento', tipo: 'fecha' },
       { nombre: 'ppa', etiqueta: 'PPA', tipo: 'decimal', min: 0, max: 9.99, paso: 0.01 },
+      ...camposCuenta,
     ],
     crear: true,
     editar: true,
@@ -171,19 +205,20 @@ export const RECURSOS: Record<string, Recurso> = {
   docentes: {
     titulo: 'Docentes',
     singular: 'docente',
-    descripcion: 'Ficha de cada docente, vinculada a una cuenta de usuario con rol docente.',
+    descripcion: 'Ficha de cada docente. Al registrarlo se crea su cuenta con rol docente para la app y la web.',
     ruta: 'docentes',
     buscar: 'Buscar por nombre o especialidad',
     columnas: [
       { titulo: 'Nombre', campo: 'nombre' },
+      { titulo: 'Usuario', campo: 'usuario.username', clase: 'codigo' },
       { titulo: 'Especialidad', campo: 'especialidad', clase: 'suave' },
       { titulo: 'Facultad', campo: 'facultad', clase: 'suave' },
     ],
     campos: [
-      { nombre: 'usuario_id', etiqueta: 'Cuenta de usuario', tipo: 'select', requerido: true, soloCrear: true, remoto: usuarios, ancho: true },
       { nombre: 'nombre', etiqueta: 'Nombre completo', tipo: 'texto', requerido: true },
       { nombre: 'especialidad', etiqueta: 'Especialidad', tipo: 'texto' },
       { nombre: 'facultad', etiqueta: 'Facultad', tipo: 'texto' },
+      ...camposCuenta,
     ],
     crear: true,
     editar: true,
