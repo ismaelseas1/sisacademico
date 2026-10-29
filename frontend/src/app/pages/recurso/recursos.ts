@@ -131,7 +131,7 @@ export const RECURSOS: Record<string, Recurso> = {
         requerido: true,
         remoto: roles,
         desde: (u: Usuario) => u.rol?.id,
-        ayuda: 'Para docentes y estudiantes usa sus módulos: ahí se crea la cuenta con su ficha.',
+        ayuda: 'Debe coincidir con la ficha de la cuenta. Los docentes y estudiantes nuevos se registran en sus módulos.',
       },
       {
         nombre: 'password',
