@@ -6,12 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\DocenteRequest;
 use App\Http\Resources\DocenteResource;
 use App\Models\Docente;
+use App\Services\AuditoriaService;
+use App\Services\CuentaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class DocenteController extends Controller
 {
+    public function __construct(private AuditoriaService $auditoria, private CuentaService $cuentas)
+    {
+    }
+
     /**
      * Listar docentes
      *
@@ -36,13 +43,20 @@ class DocenteController extends Controller
     /**
      * Registrar docente
      *
-     * Crea la ficha del docente y la vincula a una cuenta de usuario. Requiere rol admin.
+     * Crea la ficha del docente junto con su cuenta de acceso (username, email,
+     * password), que recibe automaticamente el rol docente. Requiere rol admin.
      */
     public function store(DocenteRequest $request): JsonResponse
     {
-        $docente = Docente::create($request->validated());
+        $docente = DB::transaction(function () use ($request) {
+            $usuario = $this->cuentas->crear('docente', $request->validated());
 
-        return (new DocenteResource($docente->load('usuario')))->response()->setStatusCode(201);
+            return $usuario->docente()->create($request->safe()->except(CuentaService::CAMPOS));
+        });
+
+        $this->auditoria->registrar('crear', 'docentes', $docente->id, $request->safe()->except('password'));
+
+        return (new DocenteResource($docente->load('usuario.rol')))->response()->setStatusCode(201);
     }
 
     /**
@@ -58,23 +72,36 @@ class DocenteController extends Controller
     /**
      * Actualizar docente
      *
-     * Modifica la ficha del docente. Requiere rol admin.
+     * Modifica la ficha del docente y, si se envian, los datos de su cuenta
+     * (la contrasena vacia no se cambia). Requiere rol admin.
      */
     public function update(DocenteRequest $request, Docente $docente): DocenteResource
     {
-        $docente->update($request->validated());
+        DB::transaction(function () use ($request, $docente) {
+            $docente->update($request->safe()->except(CuentaService::CAMPOS));
+            $this->cuentas->actualizar($docente->usuario, $request->validated());
+        });
 
-        return new DocenteResource($docente->load('usuario'));
+        $this->auditoria->registrar('actualizar', 'docentes', $docente->id, $request->safe()->except('password'));
+
+        return new DocenteResource($docente->load('usuario.rol'));
     }
 
     /**
      * Eliminar docente
      *
-     * Elimina la ficha del docente. Requiere rol admin.
+     * Elimina la ficha del docente y desactiva su cuenta (borrado logico), para
+     * que no quede un usuario docente sin ficha. Requiere rol admin.
      */
     public function destroy(Docente $docente): JsonResponse
     {
-        $docente->delete();
+        DB::transaction(function () use ($docente) {
+            $usuario = $docente->usuario;
+            $docente->delete();
+            $this->cuentas->eliminar($usuario);
+        });
+
+        $this->auditoria->registrar('eliminar', 'docentes', $docente->id);
 
         return response()->json(['message' => 'Docente eliminado correctamente.']);
     }

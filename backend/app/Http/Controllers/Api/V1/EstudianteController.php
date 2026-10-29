@@ -7,13 +7,15 @@ use App\Http\Requests\Api\V1\EstudianteRequest;
 use App\Http\Resources\EstudianteResource;
 use App\Models\Estudiante;
 use App\Services\AuditoriaService;
+use App\Services\CuentaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class EstudianteController extends Controller
 {
-    public function __construct(private AuditoriaService $auditoria)
+    public function __construct(private AuditoriaService $auditoria, private CuentaService $cuentas)
     {
     }
 
@@ -43,16 +45,21 @@ class EstudianteController extends Controller
     /**
      * Registrar estudiante
      *
-     * Crea la ficha academica y la vincula a una cuenta de usuario existente.
-     * El numero de registro es unico. Requiere rol admin.
+     * Crea la ficha academica junto con su cuenta de acceso (username, email,
+     * password), que recibe automaticamente el rol estudiante. El numero de
+     * registro es unico. Requiere rol admin.
      */
     public function store(EstudianteRequest $request): JsonResponse
     {
-        $estudiante = Estudiante::create($request->validated());
+        $estudiante = DB::transaction(function () use ($request) {
+            $usuario = $this->cuentas->crear('estudiante', $request->validated());
 
-        $this->auditoria->registrar('crear', 'estudiantes', $estudiante->id, $request->validated());
+            return $usuario->estudiante()->create($request->safe()->except(CuentaService::CAMPOS));
+        });
 
-        return (new EstudianteResource($estudiante->load(['carrera', 'usuario'])))
+        $this->auditoria->registrar('crear', 'estudiantes', $estudiante->id, $request->safe()->except('password'));
+
+        return (new EstudianteResource($estudiante->load(['carrera', 'usuario.rol'])))
             ->response()
             ->setStatusCode(201);
     }
@@ -72,25 +79,34 @@ class EstudianteController extends Controller
     /**
      * Actualizar estudiante
      *
-     * Modifica la ficha academica. Requiere rol admin.
+     * Modifica la ficha academica y, si se envian, los datos de su cuenta
+     * (la contrasena vacia no se cambia). Requiere rol admin.
      */
     public function update(EstudianteRequest $request, Estudiante $estudiante): EstudianteResource
     {
-        $estudiante->update($request->validated());
+        DB::transaction(function () use ($request, $estudiante) {
+            $estudiante->update($request->safe()->except(CuentaService::CAMPOS));
+            $this->cuentas->actualizar($estudiante->usuario, $request->validated());
+        });
 
-        $this->auditoria->registrar('actualizar', 'estudiantes', $estudiante->id, $request->validated());
+        $this->auditoria->registrar('actualizar', 'estudiantes', $estudiante->id, $request->safe()->except('password'));
 
-        return new EstudianteResource($estudiante->load(['carrera', 'usuario']));
+        return new EstudianteResource($estudiante->load(['carrera', 'usuario.rol']));
     }
 
     /**
      * Eliminar estudiante
      *
-     * Elimina la ficha academica. Requiere rol admin.
+     * Elimina la ficha academica y desactiva su cuenta (borrado logico), para
+     * que no quede un usuario estudiante sin ficha. Requiere rol admin.
      */
     public function destroy(Estudiante $estudiante): JsonResponse
     {
-        $estudiante->delete();
+        DB::transaction(function () use ($estudiante) {
+            $usuario = $estudiante->usuario;
+            $estudiante->delete();
+            $this->cuentas->eliminar($usuario);
+        });
 
         $this->auditoria->registrar('eliminar', 'estudiantes', $estudiante->id);
 
