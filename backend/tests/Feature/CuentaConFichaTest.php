@@ -134,4 +134,31 @@ class CuentaConFichaTest extends AppMovilTestCase
             ->putJson("/api/v1/usuarios/{$docente->usuario_id}", ['rol_id' => $docente->usuario->rol_id, 'activo' => true])
             ->assertOk();
     }
+
+    public function test_cuenta_antigua_con_ficha_de_docente_se_corrige_a_docente(): void
+    {
+        // Como quedaron los docentes creados antes: ficha de docente sobre una cuenta admin.
+        $docente = $this->docente('rflores');
+        $docente->usuario->update(['rol_id' => Rol::where('nombre', 'admin')->value('id')]);
+        $rol = fn (string $nombre) => Rol::where('nombre', $nombre)->value('id');
+
+        $this->como($this->admin())
+            ->putJson("/api/v1/usuarios/{$docente->usuario_id}", ['rol_id' => $rol('estudiante')])
+            ->assertUnprocessable();
+
+        $this->como($this->admin())
+            ->putJson("/api/v1/usuarios/{$docente->usuario_id}", ['rol_id' => $rol('docente')])
+            ->assertOk()
+            ->assertJsonPath('data.rol.nombre', 'docente');
+    }
+
+    public function test_cuenta_sin_ficha_no_pasa_a_docente(): void
+    {
+        $suelta = $this->usuario('admin', 'suelta');
+
+        $this->como($this->admin())
+            ->putJson("/api/v1/usuarios/{$suelta->id}", ['rol_id' => Rol::where('nombre', 'docente')->value('id')])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('rol_id');
+    }
 }
